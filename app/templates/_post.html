@@ -1,6 +1,6 @@
 <table class="table table-hover">
     <tr>
-        <td width="70px">
+        <td width="70px"><img src="{{ avatars.robohash(post.author.id, size='100') }}">
             <a href="{{ url_for('user', username=post.author.username) }}">
             </a>
         </td>
@@ -8,7 +8,7 @@
             <a href="{{ url_for('user', username=post.author.username) }}">
                 {{ post.author.username }}
             </a>
-            says:
+            said {{ moment(post.timestamp).fromNow() }}:
             <br>
             {{ post.body }}
         </td>
