@@ -10,6 +10,7 @@ from flask_bootstrap import Bootstrap
 from config import Config
 from flask_avatars import Avatars
 from flask_moment import Moment
+from flask_babel import Babel
 
 
 app = Flask(__name__)
@@ -22,7 +23,7 @@ mail = Mail(app)
 bootstrap = Bootstrap(app)
 avatars = Avatars(app)
 moment = Moment(app)
-
+babel = Babel(app)
 
 
 if not app.debug:
