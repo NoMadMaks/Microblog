@@ -190,6 +190,22 @@ def send_message(recipient):
     return render_template('send_message.html', title='Send Message',
                            form=form, recipient=recipient)
 
+@app.route('/deletemsg/<post_id>', methods=['GET', 'POST'])
+@login_required
+def delete_message(post_id):
+    post = Message.query.filter_by(id=post_id).first_or_404()
+    db.session.delete(post)
+    db.session.commit()
+    return redirect(url_for('messages'))
+
+@app.route('/deletepost/<post_id>', methods=['GET', 'POST'])
+@login_required
+def delete_post(post_id):
+    post = Post.query.filter_by(id=post_id).first_or_404()
+    db.session.delete(post)
+    db.session.commit()
+    return redirect(url_for('index'))
+
 @app.route('/messages')
 @login_required
 def messages():

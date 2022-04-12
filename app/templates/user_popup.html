@@ -33,6 +33,14 @@
                                            class_='btn btn-default btm-sm') }}
                         </form>
                     </p>
+                    <p>
+                        <form action="{{ url_for('send_message', recipient=user.username) }}"
+                              method="post">
+                            {{ form.hidden_tag() }}
+                            {{ form.submit(value=_('Send Message'),
+                                           class_='btn btn-default btn-sm') }}
+                        </form>
+                    </p>
                     {% endif %}
                 {% endif %}
             </small>
