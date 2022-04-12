@@ -180,13 +180,15 @@ def send_message(recipient):
     user = User.query.filter_by(username=recipient).first_or_404()
     form = MessageForm()
     if form.validate_on_submit():
-        msg = Message(author=current_user, recipient=user, body=form.message.data)
+        msg = Message(author=current_user, recipient=user,
+                      body=form.message.data)
         db.session.add(msg)
         user.add_notification('unread_message_count', user.new_messages())
         db.session.commit()
         flash('Your message has been sent.')
         return redirect(url_for('user', username=recipient))
-    return render_template('send_message.html', title='Send Message', form=form, recipient=recipient)
+    return render_template('send_message.html', title='Send Message',
+                           form=form, recipient=recipient)
 
 @app.route('/messages')
 @login_required
