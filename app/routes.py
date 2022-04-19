@@ -1,4 +1,5 @@
 from datetime import datetime
+from functools import reduce
 from flask import render_template, flash, redirect, url_for, request, jsonify
 from werkzeug.urls import url_parse
 from app import app, db
@@ -240,3 +241,28 @@ def user_popup(username):
     user = User.query.filter_by(username=username).first_or_404()
     form = EmptyForm()
     return render_template('user_popup.html', user=user, form=form)
+
+@app.route('/<post_id>/+')
+@login_required
+def karma_up(post_id):
+    post = Post.query.filter_by(id=post_id).first_or_404()
+    user = current_user
+    if Post.karma_up(post, user):
+        flash('You have upvoted this post')
+        return redirect(url_for('index'))
+    else:
+        flash('You cannot vote on the same post')
+        return redirect(url_for('index'))
+        
+
+@app.route('/<post_id>/-')
+@login_required
+def karma_down(post_id):    
+    post = Post.query.filter_by(id=post_id).first_or_404()
+    user = current_user
+    if Post.karma_down(post, user):
+        flash('You have downvoted this post')
+        return redirect(url_for('index'))
+    else:
+        flash('You cannot vote on the same post')
+        return redirect(url_for('index'))

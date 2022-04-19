@@ -11,6 +11,7 @@ from config import Config
 from flask_avatars import Avatars
 from flask_moment import Moment
 from flask_babel import Babel
+from elasticsearch import Elasticsearch
 
 
 app = Flask(__name__)
@@ -24,6 +25,8 @@ bootstrap = Bootstrap(app)
 avatars = Avatars(app)
 moment = Moment(app)
 babel = Babel(app)
+app.elasticsearch = Elasticsearch([app.config['ELASTICSEARCH_URL']]) \
+        if app.config['ELASTICSEARCH_URL'] else None
 
 
 if not app.debug:
@@ -55,3 +58,4 @@ if not app.debug:
     app.logger.info('Microblog startup')
 
 from app import routes, models, errors
+

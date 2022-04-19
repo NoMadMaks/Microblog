@@ -28,6 +28,17 @@
             <a href="{{ url_for('delete_post', post_id=post.id) }}">{{ 'Delete Post' }}</a>
             </td>
             {% endif %} 
+            <td style>
+                <p>
+                {{ post.karma }}  
+                </p>
+                <a href="{{ url_for('karma_up', post_id=post.id) }}">
+                    {{ 'Upvote' }}
+                </a>
+                <a href="{{ url_for('karma_down', post_id=post.id) }}">
+                    {{ 'Downvote' }}
+                </a>
+            </td>
         </td>
     </tr>
 </table>

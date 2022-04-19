@@ -12,6 +12,11 @@ followers = db.Table('followers',
         db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
 )
 
+voted_by = db.Table('voted_by',
+        db.Column('user_id', db.Integer, db.ForeignKey('post.id')),
+        db.Column('post_id', db.Integer, db.ForeignKey('user.id'))
+)
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), index=True, unique=True)
@@ -29,6 +34,7 @@ class User(UserMixin, db.Model):
     messages_received =  db.relationship('Message', foreign_keys='Message.recipient_id', backref='recipient', lazy='dynamic')
     last_message_read_time = db.Column(db.DateTime)
     notifications = db.relationship('Notification', backref='user', lazy='dynamic')
+
 
     def _repr_(self):
         return '<User {}>'.format(self.username)
@@ -84,14 +90,39 @@ def load_user(id):
       
     
 class Post(db.Model):
+    __searchable__ = ['body']
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(140))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    karma = db.Column(db.Integer, default=0)
+    voted_on = db.relationship('User', secondary=voted_by, 
+        primaryjoin=(voted_by.c.post_id == id),
+        secondaryjoin=(voted_by.c.user_id == User.id),
+        backref=db.backref('voted_by', lazy='dynamic'), lazy='dynamic')
 
     def __repr__(self):
         return '<Post {}>'.format(self.body)
 
+    def is_voted(self, user):
+        return self.voted_on.filter(voted_by.c.user_id == user.id).count() > 0
+
+    def karma_up(self, user):
+        if not self.is_voted(user):
+            self.voted_on.append(user)
+            self.karma = self.karma + 1
+            db.session.commit()
+            return True
+        return False
+
+    def karma_down(self,  user):
+        if not self.is_voted(user):
+            self.voted_on.append(user)
+            self.karma = self.karma - 1
+            db.session.commit()
+            return True
+        return False
+        
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
