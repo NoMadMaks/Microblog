@@ -1,0 +1,42 @@
+<table class="table table-hover">
+    <tr>
+        <td width="70px">
+            <a href="{{ url_for('user', username=post.username()) }}">
+                <img src="{{ avatars.robohash(post.author_id, size='100') }}">
+            </a>
+        </td>
+        <td>
+            {% set user_link %}
+                <span class="user_popup">
+                    <a href="{{ url_for('user', username=post.username()) }}">
+                        {{ post.username() }}
+                    </a>
+                </span>
+            {% endset %}
+            {{ _('%(username)s said %(when)s',
+                username=user_link, when=moment(post.timestamp).fromNow()) }}
+            <br>      
+            <span id="post{{ post.id }}">{{ post.body }}</span>           
+            <td style="text-align:right">
+                {% if current_user.id != post.recipient_id %}
+                <p>
+                Karma: {{ post.karma }}  
+                </p>
+                {% endif %} 
+                {% if current_user.id == post.author_id %}
+                <a href="{{ url_for('delete_comm', post_id=post.id) }}">{{ 'Delete Comment' }}</a>
+                {% endif %} 
+
+                {%  if post.karma != None %}
+                <a href="{{ url_for('karmacomm', comment_id=post.id, change='+') }}">
+                    &#128077;
+                </a>
+                <a href="{{ url_for('karmacomm', comment_id=post.id, change='-') }}">
+                    &#128078;
+                </a>
+                {% endif %} 
+ 
+            </td>
+        </td>
+    </tr>
+</table>

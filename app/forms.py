@@ -5,6 +5,10 @@ from app.models import User
 from flask import request
 from flask_babel import _, lazy_gettext as _l
 
+class CommentForm(FlaskForm):
+    body = StringField('', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])

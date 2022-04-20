@@ -12,8 +12,9 @@
                 {% endif %}
                 <p>
                     {{ _('%(count)d followers', count=user.followers.count()) }},
-                    {{ _('%(count)d following', count=user.followed.count()) }}
+                    {{ _('%(count)d following', count=user.followed.count()) }}  
                 </p>
+                <p>Karma: {{ user.karma }}</p>
                 {% if user != current_user %}
                     {% if not current_user.is_following(user) %}
                     <p>

@@ -18,6 +18,11 @@ voted_by = db.Table('voted_by',
         db.Column('post_id', db.Integer, db.ForeignKey('user.id'))
 )
 
+voted_by_comm = db.Table('voted_by_comm',
+        db.Column('user_id', db.Integer, db.ForeignKey('comments.id')),
+        db.Column('comments_id', db.Integer, db.ForeignKey('user.id'))
+)
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), index=True, unique=True)
@@ -35,7 +40,8 @@ class User(UserMixin, db.Model):
     messages_sent = db.relationship('Message', foreign_keys='Message.sender_id', backref='author', lazy='dynamic')
     messages_received =  db.relationship('Message', foreign_keys='Message.recipient_id', backref='recipient', lazy='dynamic')
     last_message_read_time = db.Column(db.DateTime)
-    notifications = db.relationship('Notification', backref='user', lazy='dynamic')
+    notifications = db.relationship('Notification', backref='author', lazy='dynamic')
+
 
 
     def _repr_(self):
@@ -82,7 +88,7 @@ class User(UserMixin, db.Model):
 
     def add_notification(self, name, data):
         self.notifications.filter_by(name=name).delete()
-        n = Notification(name=name, payload_json=json.dumps(data), user=self)
+        n = Notification(name=name, payload_json=json.dumps(data), user_id=self.id)
         db.session.add(n)
         return n
 
@@ -102,6 +108,7 @@ class Post(db.Model):
         primaryjoin=(voted_by.c.post_id == id),
         secondaryjoin=(voted_by.c.user_id == User.id),
         backref=db.backref('voted_by', lazy='dynamic'), lazy='dynamic')
+    comments = db.relationship('Comment', backref='post', lazy='dynamic')
 
     def __repr__(self):
         return '<Post {}>'.format(self.body)
@@ -146,5 +153,42 @@ class Notification(db.Model):
     def get_data(self):
         return json.loads(str(self.payload_json))
 
+class Comment(db.Model):
+    __tablename__ = 'comments'
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    body_html = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
+    karma = db.Column(db.Integer, default=0)
+    voted_on_comm = db.relationship('User', secondary=voted_by_comm, 
+        primaryjoin=(voted_by_comm.c.comments_id == id),
+        secondaryjoin=(voted_by_comm.c.user_id == User.id),
+        backref=db.backref('voted_by_comm', lazy='dynamic'), lazy='dynamic')
 
+    def __repr__(self):
+        return '<Post {}>'.format(self.body)
+
+    def username(self):
+        username = User.query.filter_by(id=self.author_id).first_or_404()
+        return username.username
+
+    def is_voted_on(self, user):
+        return self.voted_on_comm.filter(voted_by_comm.c.user_id == user.id).count() > 0
+
+    def karmachangecomm(self, user, change, commauthor):
+        if not self.is_voted_on(user):
+            self.voted_on_comm.append(user)
+            if change == '+':
+                self.karma = self.karma + 1
+                commauthor.karma = commauthor.karma + 1
+                db.session.commit()
+                return True
+            elif change == '-':
+                self.karma = self.karma - 1
+                commauthor.karma = commauthor.karma - 1
+                db.session.commit()
+                return True
+        return False
 

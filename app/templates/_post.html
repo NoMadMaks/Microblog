@@ -20,7 +20,7 @@
             <td style="text-align:right">
                 {% if current_user.id != post.recipient_id %}
                 <p>
-                {{ post.karma }}  
+                Karma: {{ post.karma }}  
                 </p>
                 {% endif %} 
 
@@ -40,6 +40,14 @@
                 <a href="{{ url_for('karma', post_id=post.id, change='-') }}">
                     &#128078;
                 </a>
+                {% endif %} 
+
+                {% if current_user.id != post.recipient_id %}
+                <a href="{{ url_for('post', post_id=post.id) }}">
+                    <span class="label label-primary">
+                    {{ post.comments.count() }} Comments
+                    </span>
+                   </a>
                 {% endif %} 
             </td>
         </td>
