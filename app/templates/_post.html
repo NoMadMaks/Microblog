@@ -16,28 +16,31 @@
             {{ _('%(username)s said %(when)s',
                 username=user_link, when=moment(post.timestamp).fromNow()) }}
             <br>      
-            <span id="post{{ post.id }}">{{ post.body }}</span>
-            {% if current_user.id == post.recipient_id %}
-            <td style="position: absolute; right: 400px">
-            <a href="{{ url_for('delete_message', post_id=post.id) }}">{{ 'Delete' }}</a>
-            <a href="{{ url_for('send_message', recipient=post.author.username) }}">{{ 'Reply' }}</a>
-            </td>
-            {% endif %} 
-            {% if current_user.id == post.author.id %}
-            <td style="position: absolute; right: 400px">
-            <a href="{{ url_for('delete_post', post_id=post.id) }}">{{ 'Delete Post' }}</a>
-            </td>
-            {% endif %} 
-            <td style>
+            <span id="post{{ post.id }}">{{ post.body }}</span>           
+            <td style="text-align:right">
+                {% if current_user.id != post.recipient_id %}
                 <p>
                 {{ post.karma }}  
                 </p>
+                {% endif %} 
+
+                {% if current_user.id == post.recipient_id %}
+                <a href="{{ url_for('delete_message', post_id=post.id) }}">{{ 'Delete' }}</a>
+                <a href="{{ url_for('send_message', recipient=post.author.username) }}">{{ 'Reply' }}</a>
+                {% endif %} 
+
+                {% if current_user.id == post.author.id %}
+                <a href="{{ url_for('delete_post', post_id=post.id) }}">{{ 'Delete Post' }}</a>
+                {% endif %} 
+
+                {%  if post.karma != None %}
                 <a href="{{ url_for('karma_up', post_id=post.id) }}">
-                    {{ 'Upvote' }}
+                    &#128077;
                 </a>
                 <a href="{{ url_for('karma_down', post_id=post.id) }}">
-                    {{ 'Downvote' }}
+                    &#128078;
                 </a>
+                {% endif %} 
             </td>
         </td>
     </tr>

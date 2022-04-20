@@ -7,7 +7,7 @@ from app.forms import LoginForm, RegistrationForm, EditProfileForm, EmptyForm, P
 from app.email import send_password_reset_email
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Post, Message, Notification
-
+import emoji
 
 
 @app.before_request
@@ -202,10 +202,11 @@ def delete_message(post_id):
 @app.route('/deletepost/<post_id>', methods=['GET', 'POST'])
 @login_required
 def delete_post(post_id):
+    back = request.referrer
     post = Post.query.filter_by(id=post_id).first_or_404()
     db.session.delete(post)
     db.session.commit()
-    return redirect(url_for('index'))
+    return redirect(back)
 
 @app.route('/messages')
 @login_required
@@ -245,24 +246,26 @@ def user_popup(username):
 @app.route('/<post_id>/+')
 @login_required
 def karma_up(post_id):
+    back = request.referrer
     post = Post.query.filter_by(id=post_id).first_or_404()
     user = current_user
     if Post.karma_up(post, user):
         flash('You have upvoted this post')
-        return redirect(url_for('index'))
+        return redirect(back)
     else:
         flash('You cannot vote on the same post')
-        return redirect(url_for('index'))
+        return redirect(back)
         
 
 @app.route('/<post_id>/-')
 @login_required
 def karma_down(post_id):    
+    back = request.referrer
     post = Post.query.filter_by(id=post_id).first_or_404()
     user = current_user
     if Post.karma_down(post, user):
         flash('You have downvoted this post')
-        return redirect(url_for('index'))
+        return redirect(back)
     else:
         flash('You cannot vote on the same post')
-        return redirect(url_for('index'))
+        return redirect(back)
