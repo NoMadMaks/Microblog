@@ -34,10 +34,10 @@
                 {% endif %} 
 
                 {%  if post.karma != None %}
-                <a href="{{ url_for('karma_up', post_id=post.id) }}">
+                <a href="{{ url_for('karma', post_id=post.id, change='+') }}">
                     &#128077;
                 </a>
-                <a href="{{ url_for('karma_down', post_id=post.id) }}">
+                <a href="{{ url_for('karma', post_id=post.id, change='-') }}">
                     &#128078;
                 </a>
                 {% endif %} 

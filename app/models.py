@@ -1,4 +1,5 @@
 from datetime import datetime
+from email.policy import default
 from app import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
@@ -25,6 +26,7 @@ class User(UserMixin, db.Model):
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     about_me = db.Column(db.String(128))
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+    karma = db.Column(db.Integer, default=0)
     followed = db.relationship(
         'User', secondary=followers,
         primaryjoin=(followers.c.follower_id == id),
@@ -106,22 +108,23 @@ class Post(db.Model):
 
     def is_voted(self, user):
         return self.voted_on.filter(voted_by.c.user_id == user.id).count() > 0
-
-    def karma_up(self, user):
+  
+    def karmachange(self, user, change, postauthor):
         if not self.is_voted(user):
             self.voted_on.append(user)
-            self.karma = self.karma + 1
-            db.session.commit()
-            return True
+            if change == '+':
+                self.karma = self.karma + 1
+                postauthor.karma = postauthor.karma + 1
+                db.session.commit()
+                return True
+            elif change == '-':
+                self.karma = self.karma - 1
+                postauthor.karma = postauthor.karma - 1
+                db.session.commit()
+                return True
         return False
 
-    def karma_down(self,  user):
-        if not self.is_voted(user):
-            self.voted_on.append(user)
-            self.karma = self.karma - 1
-            db.session.commit()
-            return True
-        return False
+        
         
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -243,13 +243,14 @@ def user_popup(username):
     form = EmptyForm()
     return render_template('user_popup.html', user=user, form=form)
 
-@app.route('/<post_id>/+')
+@app.route('/<post_id>/<change>')
 @login_required
-def karma_up(post_id):
+def karma(post_id, change):
     back = request.referrer
     post = Post.query.filter_by(id=post_id).first_or_404()
     user = current_user
-    if Post.karma_up(post, user):
+    postauthor = User.query.filter_by(id=post.user_id).first_or_404()
+    if Post.karmachange(post, user, change, postauthor):
         flash('You have upvoted this post')
         return redirect(back)
     else:
@@ -257,15 +258,3 @@ def karma_up(post_id):
         return redirect(back)
         
 
-@app.route('/<post_id>/-')
-@login_required
-def karma_down(post_id):    
-    back = request.referrer
-    post = Post.query.filter_by(id=post_id).first_or_404()
-    user = current_user
-    if Post.karma_down(post, user):
-        flash('You have downvoted this post')
-        return redirect(back)
-    else:
-        flash('You cannot vote on the same post')
-        return redirect(back)
