@@ -10,11 +10,8 @@
                 {% if user.last_seen %}
                 <p>{{ _('Last seen on') }}: {{ moment(user.last_seen).format('lll') }}</p>
                 {% endif %}
-                <p>
-                    {{ _('%(count)d followers', count=user.followers.count()) }},
-                    {{ _('%(count)d following', count=user.followed.count()) }}  
-                </p>
-                <p>Karma: {{ user.karma }}</p>
+                    <p>{{ user.followers.count() }} followers <br> following {{ user.followed.count() }} </p> 
+                <p>&#127942 {{ user.karma }}</p>
                 {% if user != current_user %}
                     {% if not current_user.is_following(user) %}
                     <p>

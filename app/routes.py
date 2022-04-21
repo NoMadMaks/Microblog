@@ -259,13 +259,16 @@ def karma(post_id, change):
     post = Post.query.filter_by(id=post_id).first_or_404()
     user = current_user
     postauthor = User.query.filter_by(id=post.user_id).first_or_404()
-    if Post.karmachange(post, user, change, postauthor):
-        flash('You have upvoted this post')
-        return redirect(back)
+    if postauthor != user:
+        if Post.karmachange(post, user, change, postauthor):
+            flash('You have upvoted this post')
+            return redirect(back)
+        else:
+            flash('You cannot vote on the same post')
+            return redirect(back)
     else:
-        flash('You cannot vote on the same post')
+        flash('You cannot vote on your own post')
         return redirect(back)
-
 @app.route('/comment/<comment_id>/<change>')
 @login_required
 def karmacomm(comment_id, change):
@@ -273,11 +276,15 @@ def karmacomm(comment_id, change):
     comment = Comment.query.filter_by(id=comment_id).first_or_404()
     user = current_user
     postauthor = User.query.filter_by(id=comment.author_id).first_or_404()
-    if Comment.karmachangecomm(comment, user, change, postauthor):
-        flash('You have upvoted this comment')
-        return redirect(back)
+    if postauthor != user:
+        if Comment.karmachangecomm(comment, user, change, postauthor):
+            flash('You have upvoted this comment')
+            return redirect(back)
+        else:
+            flash('You cannot vote on the same comment')
+            return redirect(back)
     else:
-        flash('You cannot vote on the same comment')
+        flash('You cannot vote on your own comment')
         return redirect(back)
 
 @app.route('/post/<post_id>', methods=['GET', 'POST'])
