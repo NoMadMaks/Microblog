@@ -18,10 +18,6 @@
             <br>      
             <span id="post{{ post.id }}">{{ post.body }}</span>           
             <td style="text-align:right">
-                {% if current_user.id == post.author_id %}
-                <a href="{{ url_for('delete_comm', post_id=post.id) }}">{{ 'Delete Comment' }}</a>
-                {% endif %} 
-                
                 {% if current_user.id != post.recipient_id %}
                 <p>
                     &#127942 {{ post.karma }}  
@@ -29,7 +25,10 @@
                 {% endif %} 
                 <br>
                 <br>
-                
+                <br>
+                {% if current_user.id == post.author_id %}
+                <a href="{{ url_for('delete_comm', post_id=post.id) }}">{{ 'Delete Comment' }}</a>
+                {% endif %} 
                 
 
                 {%  if post.karma != None %}
@@ -40,7 +39,7 @@
                     &#128078;
                 </a>
                 {% endif %} 
- 
+                
             </td>
         </td>
     </tr>

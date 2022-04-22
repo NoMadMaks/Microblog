@@ -18,9 +18,7 @@
             <br>      
             <span id="post{{ post.id }}">{{ post.body }}</span>           
             <td style="text-align:right;">
-                {% if current_user.id == post.author.id %}
-                <a href="{{ url_for('delete_post', post_id=post.id) }}">{{ 'Delete Post' }}</a>
-                {% endif %}
+                
                 {% if current_user.id != post.recipient_id %}
                 <p style="vertical-align: text-top;">
                 &#127942 {{ post.karma }}  
@@ -33,7 +31,9 @@
                 <a href="{{ url_for('send_message', recipient=post.author.username) }}">{{ 'Reply' }}</a>
                 {% endif %} 
 
-                 
+                {% if current_user.id == post.author.id %}
+                <a href="{{ url_for('delete_post', post_id=post.id) }}">{{ 'Delete Post' }}</a>
+                {% endif %} 
 
                 {%  if post.karma != None %}
                 <a href="{{ url_for('karma', post_id=post.id, change='+') }}">

@@ -1,5 +1,4 @@
 from datetime import datetime
-from functools import reduce
 from flask import render_template, flash, redirect, url_for, request, jsonify
 from werkzeug.urls import url_parse
 from app import app, db
@@ -7,8 +6,6 @@ from app.forms import LoginForm, RegistrationForm, EditProfileForm, EmptyForm, P
 from app.email import send_password_reset_email
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Post, Message, Notification, Comment
-import emoji
-
 
 @app.before_request
 def before_request():
@@ -261,8 +258,12 @@ def karma(post_id, change):
     postauthor = User.query.filter_by(id=post.user_id).first_or_404()
     if postauthor != user:
         if Post.karmachange(post, user, change, postauthor):
-            flash('You have upvoted this post')
-            return redirect(back)
+            if change == '+':
+                flash('You have upvoted this post')
+                return redirect(back)
+            else: 
+                flash('You have downvoted this post')
+                return redirect(back)
         else:
             flash('You cannot vote on the same post')
             return redirect(back)
@@ -278,8 +279,12 @@ def karmacomm(comment_id, change):
     postauthor = User.query.filter_by(id=comment.author_id).first_or_404()
     if postauthor != user:
         if Comment.karmachangecomm(comment, user, change, postauthor):
-            flash('You have upvoted this comment')
-            return redirect(back)
+            if change == '+':
+                flash('You have upvoted this comment')
+                return redirect(back)
+            else: 
+                flash('You have downvoted this comment')
+                return redirect(back)
         else:
             flash('You cannot vote on the same comment')
             return redirect(back)
@@ -292,20 +297,19 @@ def karmacomm(comment_id, change):
 def post(post_id):
     post = Post.query.filter_by(id=post_id).first_or_404()
     form = CommentForm()
+    page = request.args.get('page', 1, type=int)
     if form.validate_on_submit():
         comment = Comment(body=form.body.data,post=post,author_id=current_user.id)
         db.session.add(comment)
         db.session.commit()
         flash('Your comment has been published.')
-        return redirect(url_for('post', post_id=post.id, page=-1))
-    page = request.args.get('page', 1, type=int)
-    if page == -1:
-        page = (post.comments.count() - 1) // \
-            app.config['POSTS_PER_PAGE'] + 1
-    pagination = post.comments.order_by(Comment.timestamp.asc()).paginate(
-        page, per_page=app.config['POSTS_PER_PAGE'],
-        error_out=False)
+        return redirect(url_for('post', post_id=post.id, page=0))   
+    pagination = post.comments.order_by(Comment.timestamp.desc()).paginate(page, per_page=app.config['POSTS_PER_PAGE'],error_out=False)
     comments = pagination.items
-    return render_template('post.html', post=post, form=form, comments=comments, pagination=pagination)
+    next_url = url_for('post', post_id=post.id, page=pagination.next_num) \
+        if pagination.has_next else None
+    prev_url = url_for('post', post_id=post.id, page=pagination.prev_num) \
+        if pagination.has_prev else None
+    return render_template('post.html', post=post, form=form, comments=comments, pagination=pagination,  next_url=next_url, prev_url=prev_url)
         
 

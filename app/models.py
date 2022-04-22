@@ -24,7 +24,7 @@ voted_by_comm = db.Table('voted_by_comm',
 )
 
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, index=True)
     username = db.Column(db.String(32), index=True, unique=True)
     email = db.Column(db.String(64), index=True, unique=True)
     password_hash = db.Column(db.String(128))
@@ -65,9 +65,7 @@ class User(UserMixin, db.Model):
         return self.followed.filter(followers.c.followed_id == user.id).count() > 0
 
     def followed_posts(self):
-        followed = Post.query.join(
-            followers, (followers.c.followed_id == Post.user_id)).filter(
-                followers.c.follower_id == self.id)
+        followed = Post.query.join(followers, (followers.c.followed_id == Post.user_id)).filter(followers.c.follower_id == self.id)
         own = Post.query.filter_by(user_id=self.id)
         return followed.union(own).order_by(Post.timestamp.desc())
         
@@ -99,7 +97,7 @@ def load_user(id):
     
 class Post(db.Model):
     __searchable__ = ['body']
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, index=True)
     body = db.Column(db.String(140))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -155,7 +153,7 @@ class Notification(db.Model):
 
 class Comment(db.Model):
     __tablename__ = 'comments'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, index=True)
     body = db.Column(db.Text)
     body_html = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
