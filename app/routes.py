@@ -10,7 +10,7 @@ from app.models import User, Post, Message, Notification, Comment
 @app.before_request
 def before_request():
     if current_user.is_authenticated:
-        current_user.last_seen = datetime.utcnow()
+        current_user.last_seen = datetime.utcnow()  
         db.session.commit()
 
 @app.route('/', methods=['GET', 'POST'])
@@ -19,7 +19,7 @@ def before_request():
 def index():
     form = PostForm()
     page = request.args.get('page', 1, type=int)
-    posts = current_user.followed_posts().paginate(page, app.config['POSTS_PER_PAGE'], False)
+    posts = current_user.followed_posts().paginate(page, app.config['POSTS_PER_PAGE'], False) 
     next_url = url_for('index', page=posts.next_num) \
         if posts.has_next else None
     prev_url = url_for('index', page=posts.prev_num) \
