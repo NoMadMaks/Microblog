@@ -92,7 +92,7 @@ def register():
 
 @app.route("/user/<username>")
 @login_required
-def user(username):
+def user(username: str):
     user = User.query.filter_by(username=username).first_or_404()
     page = request.args.get("page", 1, type=int)
     posts = user.posts.order_by(Post.timestamp.desc()).paginate(
@@ -137,7 +137,7 @@ def edit_profile():
 
 @app.route("/follow/<username>", methods=["POST"])
 @login_required
-def follow(username):
+def follow(username: str):
     form = EmptyForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=username).first()
@@ -157,7 +157,7 @@ def follow(username):
 
 @app.route("/unfollow/<username>", methods=["POST"])
 @login_required
-def unfollow(username):
+def unfollow(username: str):
     form = EmptyForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=username).first()
@@ -227,7 +227,7 @@ def reset_password(token):
 
 @app.route("/send_message/<recipient>", methods=["GET", "POST"])
 @login_required
-def send_message(recipient):
+def send_message(recipient: str):
     user = User.query.filter_by(username=recipient).first_or_404()
     form = MessageForm()
     if form.validate_on_submit():
@@ -244,7 +244,7 @@ def send_message(recipient):
 
 @app.route("/deletemsg/<post_id>", methods=["GET", "POST"])
 @login_required
-def delete_message(post_id):
+def delete_message(post_id: int):
     post = Message.query.filter_by(id=post_id).first_or_404()
     db.session.delete(post)
     db.session.commit()
@@ -253,7 +253,7 @@ def delete_message(post_id):
 
 @app.route("/deletepost/<post_id>", methods=["GET", "POST"])
 @login_required
-def delete_post(post_id):
+def delete_post(post_id: int):
     back = request.referrer
     post = Post.query.filter_by(id=post_id).first_or_404()
     db.session.delete(post)
@@ -263,7 +263,7 @@ def delete_post(post_id):
 
 @app.route("/deletecomm/<post_id>", methods=["GET", "POST"])
 @login_required
-def delete_comm(post_id):
+def delete_comm(post_id: int):
     back = request.referrer
     post = Comment.query.filter_by(id=post_id).first_or_404()
     db.session.delete(post)
@@ -309,7 +309,7 @@ def notifications():
 
 @app.route("/user/<username>/popup")
 @login_required
-def user_popup(username):
+def user_popup(username: str):
     user = User.query.filter_by(username=username).first_or_404()
     form = EmptyForm()
     return render_template("user_popup.html", user=user, form=form)
@@ -317,7 +317,7 @@ def user_popup(username):
 
 @app.route("/<post_id>/<change>")
 @login_required
-def karma(post_id, change):
+def karma(post_id: int, change: str):
     back = request.referrer
     post = Post.query.filter_by(id=post_id).first_or_404()
     user = current_user
@@ -340,7 +340,7 @@ def karma(post_id, change):
 
 @app.route("/comment/<comment_id>/<change>")
 @login_required
-def karmacomm(comment_id, change):
+def karmacomm(comment_id: int, change: str):
     back = request.referrer
     comment = Comment.query.filter_by(id=comment_id).first_or_404()
     user = current_user
@@ -363,7 +363,7 @@ def karmacomm(comment_id, change):
 
 @app.route("/post/<post_id>", methods=["GET", "POST"])
 @login_required
-def post(post_id):
+def post(post_id: int):
     post = Post.query.filter_by(id=post_id).first_or_404()
     form = CommentForm()
     page = request.args.get("page", 1, type=int)

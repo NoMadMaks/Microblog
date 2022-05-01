@@ -58,10 +58,10 @@ class User(UserMixin, db.Model):
     def _repr_(self):
         return "<User {}>".format(self.username)
 
-    def set_password(self, password):
+    def set_password(self, password: str):
         self.password_hash = generate_password_hash(password)
 
-    def check_password(self, password):
+    def check_password(self, password: str):
         return check_password_hash(self.password_hash, password)
 
     def follow(self, user):
@@ -107,7 +107,7 @@ class User(UserMixin, db.Model):
             .count()
         )
 
-    def add_notification(self, name, data):
+    def add_notification(self, name: str, data):
         self.notifications.filter_by(name=name).delete()
         n = Notification(name=name, payload_json=json.dumps(data), user_id=self.id)
         db.session.add(n)
@@ -115,7 +115,7 @@ class User(UserMixin, db.Model):
 
 
 @login.user_loader
-def load_user(id):
+def load_user(id: int):
     return User.query.get(int(id))
 
 
@@ -139,10 +139,10 @@ class Post(db.Model):
     def __repr__(self):
         return "<Post {}>".format(self.body)
 
-    def is_voted(self, user):
+    def is_voted(self, user: User):
         return self.voted_on.filter(voted_by.c.user_id == user.id).count() > 0
 
-    def karmachange(self, user, change, postauthor):
+    def karmachange(self, user: User, change: str, postauthor: User):
         if not self.is_voted(user):
             self.voted_on.append(user)
             if change == "+":
@@ -206,10 +206,10 @@ class Comment(db.Model):
         username = User.query.filter_by(id=self.author_id).first_or_404()
         return username.username
 
-    def is_voted_on(self, user):
+    def is_voted_on(self, user: User):
         return self.voted_on_comm.filter(voted_by_comm.c.user_id == user.id).count() > 0
 
-    def karmachangecomm(self, user, change, commauthor):
+    def karmachangecomm(self, user: User, change: str, commauthor: User):
         if not self.is_voted_on(user):
             self.voted_on_comm.append(user)
             if change == "+":
