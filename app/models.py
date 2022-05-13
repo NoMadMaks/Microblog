@@ -25,6 +25,11 @@ voted_by_comm = db.Table(
     db.Column("comments_id", db.Integer, db.ForeignKey("user.id")),
 )
 
+users_in_communities = db.Table(
+    "users_in_communities",
+    db.Column("user_id", db.Integer, db.ForeignKey("community.id")),
+    db.Column("community_id", db.Integer, db.ForeignKey("user.id")),
+)
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True, index=True)
@@ -122,6 +127,7 @@ def load_user(id: int):
 class Post(db.Model):
     __searchable__ = ["body"]
     id = db.Column(db.Integer, primary_key=True, index=True)
+    communityid = db.Column(db.Integer, db.ForeignKey('community.id'), default=None)
     body = db.Column(db.String(140))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
@@ -157,6 +163,9 @@ class Post(db.Model):
                 return True
         return False
 
+    def getcommname(self):
+        community = Community.query.filter_by(id = self.communityid).first_or_404()
+        return community.name
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -223,3 +232,20 @@ class Comment(db.Model):
                 db.session.commit()
                 return True
         return False
+
+class Community(db.Model):
+    __tablename__ = "community"
+    id = db.Column(db.Integer, primary_key=True, index=True)
+    name = db.Column(db.String(32), index=True, unique=True)
+    about = db.Column(db.String(164))
+    posts = db.relationship("Post")
+    users_in_communities = db.relationship(
+        "User",
+        secondary=users_in_communities ,
+        primaryjoin=(users_in_communities .c.community_id == id),
+        secondaryjoin=(users_in_communities .c.user_id == User.id),
+        backref=db.backref("users_in_communities ", lazy="dynamic"),
+        lazy="dynamic",
+    )
+
+    

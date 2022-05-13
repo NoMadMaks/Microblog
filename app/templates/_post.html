@@ -15,6 +15,9 @@
             {% endset %}
             {{ _('%(username)s said %(when)s',
                 username=user_link, when=moment(post.timestamp).fromNow()) }}
+            {% if post.communityid %}
+                <a href="{{ url_for('community', community_id=post.communityid) }}">in {{post.getcommname()}}</a> 
+            {% endif %}  
             <br>      
             <span id="post{{ post.id }}">{{ post.body }}</span>           
             <td style="text-align:right;">

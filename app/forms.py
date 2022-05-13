@@ -9,6 +9,10 @@ class CommentForm(FlaskForm):
     body = StringField("", validators=[DataRequired()])
     submit = SubmitField("Submit")
 
+class CommunityForm(FlaskForm):
+    name = StringField("Community name", validators=[DataRequired()])
+    about = StringField("What`s the community about?", validators=[DataRequired()])
+    submit = SubmitField("Submit")
 
 class LoginForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired()])

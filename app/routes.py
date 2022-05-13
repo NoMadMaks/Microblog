@@ -12,10 +12,11 @@ from app.forms import (
     ResetPasswordRequestForm,
     MessageForm,
     CommentForm,
+    CommunityForm
 )
 from app.email import send_password_reset_email
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import User, Post, Message, Notification, Comment
+from app.models import User, Post, Message, Notification, Comment, Community
 
 
 @app.before_request
@@ -178,8 +179,9 @@ def unfollow(username: str):
 @app.route("/explore")
 @login_required
 def explore():
+    community = Community.query.filter(Community.id == None)
     page = request.args.get("page", 1, type=int)
-    posts = Post.query.order_by(Post.timestamp.desc()).paginate(
+    posts = Post.query.filter(Post.communityid == None).order_by(Post.timestamp.desc()).paginate(
         page, app.config["POSTS_PER_PAGE"], False
     )
     next_url = url_for("explore", page=posts.next_num) if posts.has_next else None
@@ -190,6 +192,7 @@ def explore():
         posts=posts.items,
         next_url=next_url,
         prev_url=prev_url,
+        community=community
     )
 
 
@@ -395,4 +398,55 @@ def post(post_id: int):
         pagination=pagination,
         next_url=next_url,
         prev_url=prev_url,
+    )
+@app.route("/communities", methods=["GET", "POST"])
+@login_required
+def communities():
+
+    form = CommunityForm()
+    page = request.args.get("page", 1, type=int)
+    posts = Community.query.order_by(Community.name.desc()).paginate(
+        page, app.config["POSTS_PER_PAGE"], False
+    )
+    next_url = url_for("/community/<community_id>", page=posts.next_num) if posts.has_next else None
+    prev_url = url_for("/community/<community_id>", page=posts.prev_num) if posts.has_prev else None
+    if form.validate_on_submit():
+        community = Community(name=form.name.data, about=form.about.data)
+        db.session.add(community)
+        db.session.commit()
+        return redirect(url_for("communities")) 
+    return render_template(
+        "community.html",
+        title="Communities",
+        form=form,
+        posts=posts.items,
+        next_url=next_url,
+        prev_url=prev_url,
+    )
+
+
+@app.route("/community/<community_id>", methods=["GET", "POST"])
+@login_required
+def community(community_id):
+    community = Community.query.filter(Community.id == community_id).first_or_404()
+    form = PostForm()
+    page = request.args.get("page", 1, type=int)
+    posts = Post.query.filter(Post.communityid == community_id).order_by(Post.timestamp.desc()).paginate(
+        page, app.config["POSTS_PER_PAGE"], False
+    )
+    next_url = url_for("/community/<community_id>", page=posts.next_num) if posts.has_next else None
+    prev_url = url_for("/community/<community_id>", page=posts.prev_num) if posts.has_prev else None
+    if form.validate_on_submit():
+        post = Post(body=form.post.data, author=current_user, communityid=community_id)
+        db.session.add(post)
+        db.session.commit()
+        return redirect(url_for("community", community_id=community_id))
+    return render_template(
+        "community_id.html",
+        title="<community_id>",
+        form=form,
+        posts=posts.items,
+        next_url=next_url,
+        prev_url=prev_url,
+        community=community
     )

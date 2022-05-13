@@ -1,0 +1,12 @@
+<table class="table table-hover">
+    <tr>
+        <td>
+            <br> 
+            <a href="{{ url_for('community', community_id=post.id) }}">{{ post.name }}</a>
+            <br> 
+            <span id="post{{ post.id }}">{{ post.about }}</span>         
+            <td style="text-align:right;"> 
+            </td>
+        </td>
+    </tr>
+</table>
