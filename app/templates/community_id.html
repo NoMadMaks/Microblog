@@ -2,8 +2,15 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block title %} {{community.name}} {% endblock %}
 {% block app_content %}
-<h1>{{community.name}}</h1>
-<p>{{community.about}}</p>
+<h1>{{ community.name }}</h1>
+<p>{{ community.about }}</p>
+<p>Members: {{ community.users_in_communities.count() }}</p>
+{% if community.is_followingcomm(current_user) %}
+<a href="{{ url_for('unfollowcomm', community_id=community.id) }}">Leave this community</a>
+{% endif %}
+{% if not community.is_followingcomm(current_user) %}
+<a href="{{ url_for('followcomm', community_id=community.id) }}">Join this community</a>
+{% endif %}
 <br>
 <br>
 {% if form %}

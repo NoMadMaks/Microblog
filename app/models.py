@@ -81,11 +81,14 @@ class User(UserMixin, db.Model):
         return self.followed.filter(followers.c.followed_id == user.id).count() > 0
 
     def followed_posts(self):
+        followedcomms = Post.query.join(
+            users_in_communities, (users_in_communities.c.community_id == Post.communityid)
+        ).filter(users_in_communities.c.user_id == self.id)
         followed = Post.query.join(
             followers, (followers.c.followed_id == Post.user_id)
         ).filter(followers.c.follower_id == self.id)
         own = Post.query.filter_by(user_id=self.id)
-        return followed.union(own).order_by(Post.timestamp.desc())
+        return followed.union(own, followedcomms).order_by(Post.timestamp.desc())
 
     def get_reset_password_token(self, expires_in=600):
         return jwt.encode(
@@ -248,4 +251,13 @@ class Community(db.Model):
         lazy="dynamic",
     )
 
-    
+    def followcomm(self, user):
+        if not self.is_followingcomm(user):
+            self.users_in_communities.append(user)
+
+    def unfollowcomm(self, user):
+        if self.is_followingcomm(user):
+            self.users_in_communities.remove(user)
+
+    def is_followingcomm(self, user):
+        return self.users_in_communities.filter(users_in_communities.c.user_id == user.id).count() > 0

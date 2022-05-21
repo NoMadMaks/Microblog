@@ -6,6 +6,7 @@
             <br> 
             <span id="post{{ post.id }}">{{ post.about }}</span>         
             <td style="text-align:right;"> 
+            <p>Members: {{ post.users_in_communities.count() }}</p>
             </td>
         </td>
     </tr>

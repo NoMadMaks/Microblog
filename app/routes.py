@@ -450,3 +450,26 @@ def community(community_id):
         prev_url=prev_url,
         community=community
     )
+
+
+@app.route("/community/<community_id>/join", methods=["GET","POST"])
+@login_required
+def followcomm(community_id: int):
+    user=current_user
+    community = Community.query.filter_by(id=community_id).first()
+    community.followcomm(user)
+    db.session.commit()
+    flash("You have joined {}!".format(community.name))
+    return redirect(url_for("community", community_id=community_id))
+
+
+
+@app.route("/community/<community_id>/leave", methods=["GET","POST"])
+@login_required
+def unfollowcomm(community_id: int):
+    user=current_user
+    community = Community.query.filter_by(id=community_id).first()
+    community.unfollowcomm(user)
+    db.session.commit()
+    flash("You have left {}.".format(community.name))
+    return redirect(url_for("community", community_id=community_id))
